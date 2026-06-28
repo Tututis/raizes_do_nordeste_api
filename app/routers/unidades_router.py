@@ -6,13 +6,13 @@ from app.models.unidade import Unidade
 from app.schemas.unidade_schema import UnidadeCreate, UnidadeResponse
 
 
-routers = APIRouter(
+router = APIRouter(
     prefix="/unidades",
     tags=["Unidades"]
 )
 
 
-@routers.post(
+@router.post(
     "",
     response_model=UnidadeResponse,
     status_code=status.HTTP_201_CREATED
@@ -32,12 +32,12 @@ def criar_unidade(dados: UnidadeCreate, db: Session = Depends(get_db)):
     return nova_unidade
 
 
-@routers.get("", response_model=list[UnidadeResponse])
+@router.get("", response_model=list[UnidadeResponse])
 def listar_unidades(db: Session = Depends(get_db)):
     return db.query(Unidade).all()
 
 
-@routers.get("/{unidade_id}", response_model=UnidadeResponse)
+@router.get("/{unidade_id}", response_model=UnidadeResponse)
 def buscar_unidade(unidade_id: int, db: Session = Depends(get_db)):
     unidade = db.query(Unidade).filter(Unidade.id == unidade_id).first()
 

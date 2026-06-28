@@ -1,18 +1,22 @@
-from pydantic import BaseModel, ConfigDict
+from decimal import Decimal
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class UnidadeCreate(BaseModel):
+class ProdutoCreate(BaseModel):
     nome: str
-    cidade: str
-    estado: str
-    ativa: bool = True
+    descricao: str | None = None
+    preco: Decimal = Field(gt=0)
+    ativo: bool = True
+    sazonal: bool = False
 
 
-class UnidadeResponse(BaseModel):
+class ProdutoResponse(BaseModel):
     id: int
     nome: str
-    cidade: str
-    estado: str
-    ativa: bool
+    descricao: str | None
+    preco: Decimal
+    ativo: bool
+    sazonal: bool
 
     model_config = ConfigDict(from_attributes=True)

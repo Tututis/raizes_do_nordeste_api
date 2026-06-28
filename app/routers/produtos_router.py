@@ -2,49 +2,50 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.unidade import Unidade
-from app.schemas.unidade_schema import UnidadeCreate, UnidadeResponse
+from app.models.produto import Produto
+from app.schemas.produto_schema import ProdutoCreate, ProdutoResponse
 
 
-routers = APIRouter(
-    prefix="/unidades",
-    tags=["Unidades"]
+router = APIRouter(
+    prefix="/produtos",
+    tags=["Produtos"]
 )
 
 
-@routers.post(
+@router.post(
     "",
-    response_model=UnidadeResponse,
+    response_model=ProdutoResponse,
     status_code=status.HTTP_201_CREATED
 )
-def criar_unidade(dados: UnidadeCreate, db: Session = Depends(get_db)):
-    nova_unidade = Unidade(
+def criar_produto(dados: ProdutoCreate, db: Session = Depends(get_db)):
+    novo_produto = Produto(
         nome=dados.nome,
-        cidade=dados.cidade,
-        estado=dados.estado.upper(),
-        ativa=dados.ativa
+        descricao=dados.descricao,
+        preco=dados.preco,
+        ativo=dados.ativo,
+        sazonal=dados.sazonal
     )
 
-    db.add(nova_unidade)
+    db.add(novo_produto)
     db.commit()
-    db.refresh(nova_unidade)
+    db.refresh(novo_produto)
 
-    return nova_unidade
-
-
-@routers.get("", response_model=list[UnidadeResponse])
-def listar_unidades(db: Session = Depends(get_db)):
-    return db.query(Unidade).all()
+    return novo_produto
 
 
-@routers.get("/{unidade_id}", response_model=UnidadeResponse)
-def buscar_unidade(unidade_id: int, db: Session = Depends(get_db)):
-    unidade = db.query(Unidade).filter(Unidade.id == unidade_id).first()
+@router.get("", response_model=list[ProdutoResponse])
+def listar_produtos(db: Session = Depends(get_db)):
+    return db.query(Produto).all()
 
-    if not unidade:
+
+@router.get("/{produto_id}", response_model=ProdutoResponse)
+def buscar_produto(produto_id: int, db: Session = Depends(get_db)):
+    produto = db.query(Produto).filter(Produto.id == produto_id).first()
+
+    if not produto:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Unidade não encontrada"
+            detail="Produto não encontrado"
         )
 
-    return unidade
+    return produto
