@@ -24,7 +24,7 @@ def criar_estoque(
     usuario: Usuario = Depends(exigir_perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE))
 ):
 
-    if not unidade:
+    if not Unidade:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Unidade não encontrada"

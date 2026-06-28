@@ -45,6 +45,8 @@ def criar_pedido(
             detail="Cliente só pode criar pedido para si mesmo"
         )
 
+    cliente = db.query(Usuario).filter(Usuario.id == dados.cliente_id).first()
+
     if not cliente:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
