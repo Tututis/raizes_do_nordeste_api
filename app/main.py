@@ -8,6 +8,7 @@ from app.routers.produtos_router import router as produtos_router
 from app.routers.estoque_router import router as estoque_router
 from app.routers.pedidos_router import router as pedidos_router
 from app.routers.usuarios_router import router as usuarios_router
+from app.routers.pagamentos_router import router as pagamentos_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -24,6 +25,7 @@ app.include_router(produtos_router)
 app.include_router(estoque_router)
 app.include_router(pedidos_router)
 app.include_router(usuarios_router)
+app.include_router(pagamentos_router)
 
 @app.get("/")
 def health_check():
