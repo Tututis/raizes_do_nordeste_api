@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-
 from app.database import Base, engine
+from app.exceptions import registrar_exception_handlers
 import app.models
 
 from app.routers.unidades_router import router as unidades_router
@@ -12,6 +12,7 @@ from app.routers.pagamentos_router import router as pagamentos_router
 from app.routers.auth_router import router as auth_router
 from app.routers.auditoria_router import router as auditoria_router
 
+
 Base.metadata.create_all(bind=engine)
 
 
@@ -21,6 +22,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
+registrar_exception_handlers(app)
 
 app.include_router(unidades_router)
 app.include_router(produtos_router)
