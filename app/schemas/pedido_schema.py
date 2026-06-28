@@ -39,3 +39,6 @@ class PedidoResponse(BaseModel):
     itens: list[ItemPedidoResponse]
 
     model_config = ConfigDict(from_attributes=True)
+
+class AtualizarStatusPedidoRequest(BaseModel):
+    status: StatusPedido

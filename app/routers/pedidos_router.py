@@ -10,7 +10,13 @@ from app.models.produto import Produto
 from app.models.unidade import Unidade
 from app.models.usuario import PerfilUsuario, Usuario
 from app.security import obter_usuario_atual, exigir_perfis
-from app.schemas.pedido_schema import PedidoCreate, PedidoResponse
+from app.schemas.pedido_schema import (
+    AtualizarStatusPedidoRequest,
+    PedidoCreate,
+    PedidoResponse
+)
+from app.models.auditoria import Auditoria
+from app.schemas.pedido_schema import AtualizarStatusPedidoRequest
 
 
 router = APIRouter(
@@ -185,5 +191,71 @@ def buscar_pedido(
         )
 
     return pedido
+
+@router.patch("/{pedido_id}/status", response_model=PedidoResponse)
+def atualizar_status_pedido(
+    pedido_id: int,
+    dados: AtualizarStatusPedidoRequest,
+    db: Session = Depends(get_db),
+    usuario_atual: Usuario = Depends(
+        exigir_perfis(
+            PerfilUsuario.ADMIN,
+            PerfilUsuario.GERENTE,
+            PerfilUsuario.ATENDENTE,
+            PerfilUsuario.COZINHA
+        )
+    )
+):
+    pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
+
+    if not pedido:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Pedido não encontrado"
+        )
+
+    status_anterior = pedido.status
+
+    transicoes_permitidas = {
+        StatusPedido.PAGO: [
+            StatusPedido.EM_PREPARO,
+            StatusPedido.CANCELADO
+        ],
+        StatusPedido.EM_PREPARO: [
+            StatusPedido.PRONTO,
+            StatusPedido.CANCELADO
+        ],
+        StatusPedido.PRONTO: [
+            StatusPedido.ENTREGUE
+        ],
+        StatusPedido.AGUARDANDO_PAGAMENTO: [
+            StatusPedido.CANCELADO
+        ],
+        StatusPedido.PAGAMENTO_RECUSADO: [
+            StatusPedido.CANCELADO
+        ]
+    }
+
+    proximos_status = transicoes_permitidas.get(status_anterior, [])
+
+    if dados.status not in proximos_status:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Transição de status inválida: {status_anterior.value} para {dados.status.value}"
+        )
+
+    pedido.status = dados.status
+
+    registro_auditoria = Auditoria(
+        usuario_id=usuario_atual.id,
+        acao="ATUALIZACAO_STATUS_PEDIDO",
+        entidade="Pedido",
+        entidade_id=pedido.id,
+        detalhes=f"Status alterado de {status_anterior.value} para {dados.status.value}"
+    )
+
+    db.add(registro_auditoria)
+    db.commit()
+    db.refresh(pedido)
 
     return pedido
