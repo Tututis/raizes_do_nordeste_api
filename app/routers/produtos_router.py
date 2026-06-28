@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.produto import Produto
 from app.schemas.produto_schema import ProdutoCreate, ProdutoResponse
-
+from app.models.usuario import PerfilUsuario, Usuario
+from app.security import exigir_perfis
 
 router = APIRouter(
     prefix="/produtos",
@@ -17,7 +18,11 @@ router = APIRouter(
     response_model=ProdutoResponse,
     status_code=status.HTTP_201_CREATED
 )
-def criar_produto(dados: ProdutoCreate, db: Session = Depends(get_db)):
+def criar_produto(
+    dados: ProdutoCreate,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE))
+):
     novo_produto = Produto(
         nome=dados.nome,
         descricao=dados.descricao,

@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.unidade import Unidade
 from app.schemas.unidade_schema import UnidadeCreate, UnidadeResponse
-
+from app.models.usuario import PerfilUsuario, Usuario
+from app.security import exigir_perfis
 
 router = APIRouter(
     prefix="/unidades",
@@ -17,7 +18,11 @@ router = APIRouter(
     response_model=UnidadeResponse,
     status_code=status.HTTP_201_CREATED
 )
-def criar_unidade(dados: UnidadeCreate, db: Session = Depends(get_db)):
+def criar_unidade(
+    dados: UnidadeCreate,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE))
+):
     nova_unidade = Unidade(
         nome=dados.nome,
         cidade=dados.cidade,

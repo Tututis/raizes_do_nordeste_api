@@ -8,7 +8,8 @@ from app.models.estoque import Estoque
 from app.models.pedido import CanalPedido, ItemPedido, Pedido, StatusPedido
 from app.models.produto import Produto
 from app.models.unidade import Unidade
-from app.models.usuario import Usuario
+from app.models.usuario import PerfilUsuario, Usuario
+from app.security import obter_usuario_atual, exigir_perfis
 from app.schemas.pedido_schema import PedidoCreate, PedidoResponse
 
 
@@ -23,8 +24,20 @@ router = APIRouter(
     response_model=PedidoResponse,
     status_code=status.HTTP_201_CREATED
 )
-def criar_pedido(dados: PedidoCreate, db: Session = Depends(get_db)):
-    cliente = db.query(Usuario).filter(Usuario.id == dados.cliente_id).first()
+def criar_pedido(
+    dados: PedidoCreate,
+    db: Session = Depends(get_db),
+    usuario_atual: Usuario = Depends(obter_usuario_atual)
+):
+
+    if (
+        usuario_atual.perfil == PerfilUsuario.CLIENTE
+        and usuario_atual.id != dados.cliente_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cliente só pode criar pedido para si mesmo"
+        )
 
     if not cliente:
         raise HTTPException(
@@ -127,7 +140,15 @@ def criar_pedido(dados: PedidoCreate, db: Session = Depends(get_db)):
 def listar_pedidos(
     canalPedido: CanalPedido | None = Query(default=None),
     status_pedido: StatusPedido | None = Query(default=None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(
+        exigir_perfis(
+            PerfilUsuario.ADMIN,
+            PerfilUsuario.GERENTE,
+            PerfilUsuario.ATENDENTE,
+            PerfilUsuario.COZINHA
+        )
+    )
 ):
     consulta = db.query(Pedido)
 
@@ -141,7 +162,11 @@ def listar_pedidos(
 
 
 @router.get("/{pedido_id}", response_model=PedidoResponse)
-def buscar_pedido(pedido_id: int, db: Session = Depends(get_db)):
+def buscar_pedido(
+    pedido_id: int,
+    db: Session = Depends(get_db),
+    usuario_atual: Usuario = Depends(obter_usuario_atual)
+):
     pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
 
     if not pedido:
@@ -149,5 +174,16 @@ def buscar_pedido(pedido_id: int, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Pedido não encontrado"
         )
+
+    if (
+        usuario_atual.perfil == PerfilUsuario.CLIENTE
+        and pedido.cliente_id != usuario_atual.id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cliente só pode consultar seus próprios pedidos"
+        )
+
+    return pedido
 
     return pedido

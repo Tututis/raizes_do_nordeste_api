@@ -7,7 +7,8 @@ from app.database import get_db
 from app.models.pagamento import Pagamento, StatusPagamento
 from app.models.pedido import Pedido, StatusPedido
 from app.schemas.pagamento_schema import PagamentoMockCreate, PagamentoResponse
-
+from app.models.usuario import PerfilUsuario, Usuario
+from app.security import exigir_perfis
 
 router = APIRouter(
     prefix="/pagamentos",
@@ -22,7 +23,15 @@ router = APIRouter(
 )
 def processar_pagamento_mock(
     dados: PagamentoMockCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(
+        exigir_perfis(
+            PerfilUsuario.ADMIN,
+            PerfilUsuario.GERENTE,
+            PerfilUsuario.ATENDENTE,
+            PerfilUsuario.CLIENTE
+        )
+    )
 ):
     pedido = db.query(Pedido).filter(Pedido.id == dados.pedido_id).first()
 

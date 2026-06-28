@@ -8,7 +8,8 @@ from app.models.estoque import Estoque
 from app.models.produto import Produto
 from app.models.unidade import Unidade
 from app.schemas.estoque_schema import EstoqueCreate, EstoqueMovimentacao, EstoqueResponse
-
+from app.models.usuario import PerfilUsuario, Usuario
+from app.security import exigir_perfis
 
 router = APIRouter(
     prefix="/estoque",
@@ -17,8 +18,11 @@ router = APIRouter(
 
 
 @router.post("", response_model=EstoqueResponse, status_code=status.HTTP_201_CREATED)
-def criar_estoque(dados: EstoqueCreate, db: Session = Depends(get_db)):
-    unidade = db.query(Unidade).filter(Unidade.id == dados.unidade_id).first()
+def criar_estoque(
+    dados: EstoqueCreate,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE))
+):
 
     if not unidade:
         raise HTTPException(
@@ -76,7 +80,8 @@ def listar_estoque_por_unidade(unidade_id: int, db: Session = Depends(get_db)):
 def registrar_entrada(
     estoque_id: int,
     dados: EstoqueMovimentacao,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE))
 ):
     estoque = db.query(Estoque).filter(Estoque.id == estoque_id).first()
 
@@ -99,7 +104,8 @@ def registrar_entrada(
 def registrar_saida(
     estoque_id: int,
     dados: EstoqueMovimentacao,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(exigir_perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE))
 ):
     estoque = db.query(Estoque).filter(Estoque.id == estoque_id).first()
 
