@@ -7,11 +7,7 @@ from app.database import get_db
 from app.models.estoque import Estoque
 from app.models.produto import Produto
 from app.models.unidade import Unidade
-from app.schemas.estoque_schema import (
-    EstoqueCreate,
-    EstoqueMovimentacao,
-    EstoqueResponse
-)
+from app.schemas.estoque_schema import EstoqueCreate, EstoqueMovimentacao, EstoqueResponse
 
 
 router = APIRouter(
@@ -20,11 +16,7 @@ router = APIRouter(
 )
 
 
-@router.post(
-    "",
-    response_model=EstoqueResponse,
-    status_code=status.HTTP_201_CREATED
-)
+@router.post("", response_model=EstoqueResponse, status_code=status.HTTP_201_CREATED)
 def criar_estoque(dados: EstoqueCreate, db: Session = Depends(get_db)):
     unidade = db.query(Unidade).filter(Unidade.id == dados.unidade_id).first()
 
@@ -67,10 +59,7 @@ def criar_estoque(dados: EstoqueCreate, db: Session = Depends(get_db)):
     return novo_estoque
 
 
-@router.get(
-    "/unidade/{unidade_id}",
-    response_model=list[EstoqueResponse]
-)
+@router.get("/unidade/{unidade_id}", response_model=list[EstoqueResponse])
 def listar_estoque_por_unidade(unidade_id: int, db: Session = Depends(get_db)):
     unidade = db.query(Unidade).filter(Unidade.id == unidade_id).first()
 
@@ -83,10 +72,7 @@ def listar_estoque_por_unidade(unidade_id: int, db: Session = Depends(get_db)):
     return db.query(Estoque).filter(Estoque.unidade_id == unidade_id).all()
 
 
-@router.patch(
-    "/{estoque_id}/entrada",
-    response_model=EstoqueResponse
-)
+@router.patch("/{estoque_id}/entrada", response_model=EstoqueResponse)
 def registrar_entrada(
     estoque_id: int,
     dados: EstoqueMovimentacao,
@@ -109,10 +95,7 @@ def registrar_entrada(
     return estoque
 
 
-@router.patch(
-    "/{estoque_id}/saida",
-    response_model=EstoqueResponse
-)
+@router.patch("/{estoque_id}/saida", response_model=EstoqueResponse)
 def registrar_saida(
     estoque_id: int,
     dados: EstoqueMovimentacao,
