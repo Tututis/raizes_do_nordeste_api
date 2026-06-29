@@ -124,6 +124,7 @@ raizes_api/
 
 ## Como executar o projeto
 
+###Todos os comandos de 1. a 5. são executados no PowerShell
 ### 1. Clonar o repositório
 
 ```bash
@@ -139,16 +140,8 @@ python -m venv venv
 
 ### 3. Ativar ambiente virtual
 
-No PowerShell:
-
 ```bash
 .\venv\Scripts\Activate.ps1
-```
-
-No CMD:
-
-```bash
-venv\Scripts\activate
 ```
 
 ### 4. Instalar dependências
@@ -358,12 +351,9 @@ Resposta esperada:
 Para acessar rotas protegidas no Swagger:
 
 1. Copie o valor de `access_token`.
-2. Clique em **Authorize**.
-3. Informe o token no formato:
+2. Clique em **Authorize** localizado no inicio do site ou em qualquer simbolo de cadeado.
+3. Informe o access_token fornecido ao executar o login:
 
-```text
-Bearer token_jwt_gerado
-```
 
 ### Criar unidade
 
@@ -662,6 +652,14 @@ O projeto utiliza Git para versionamento e possui commits organizados por etapa 
 ## Observações finais
 
 Este projeto foi desenvolvido como uma simulação de Back-End para uma rede de lanchonetes, com foco em API REST, modelagem de domínio, persistência em banco, segurança, integração simulada com pagamento externo e rastreabilidade operacional.
+
+## Links
+
+Para o código fonte e pastas com diagrama e testes PostMan exportados em JSON
+https://github.com/Tututis/raizes_do_nordeste_api
+
+Para o PostMan original para leitura
+https://www.postman.com/arthursmagri-631172/workspace/razes-do-nordeste-api/collection/49343557-094cf26a-893d-4ce1-bf0f-f24ffb2d660c?action=share&source=copy-link&creator=49343557
 
 ## Autor
 
