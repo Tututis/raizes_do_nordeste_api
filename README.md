@@ -665,4 +665,5 @@ Este projeto foi desenvolvido como uma simulação de Back-End para uma rede de 
 
 ## Autor
 
-Arthur de Santana Magri
+Arthur de Santana Magri 
+RU: 4763786
